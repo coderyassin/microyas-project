@@ -29,6 +29,8 @@ management:
   health:
     circuitbreakers:
       enabled: true
+    ratelimiters:
+      enabled: true
 resilience4j:
   circuitbreaker:
     configs:
@@ -39,14 +41,16 @@ resilience4j:
         minimum-number-of-calls: 5
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 5s
+        wait-duration-in-open-state: 10s
         failure-rate-threshold: 50
         event-consumer-buffer-size: 10
         record-exceptions:
           - org.springframework.web.client.HttpServerErrorException
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
           - java.util.concurrent.TimeoutException
           - java.io.IOException
         ignore-exceptions:
+          - io.github.resilience4j.ratelimiter.RequestNotPermitted
       shared:
         sliding-window-type: count_based
         sliding-window-size: 100
@@ -60,3 +64,15 @@ resilience4j:
         ignore-exceptions:
           - org.yascode.microyas.user_service.exception.ResourceNotFoundException
           - org.yascode.microyas.user_service.exception.NoSuchElementException
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 50
+        limit-refresh-period: 5s
+        timeout-duration: 1s
+        register-health-indicator: true
+        subscribe-for-events: true
+        event-consumer-buffer-size: 100
+    instances:
+      user-service:
+        base-config: default

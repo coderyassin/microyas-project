@@ -3,6 +3,7 @@ package org.yascode.microyas.user_service.service.impl;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -36,20 +37,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CircuitBreaker(name = SERVICE_NAME, fallbackMethod = "fallbackRandomUsers")
-    public List<User> getAllUsers() {
+    @CircuitBreaker(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
+    @RateLimiter(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
+    public List<User> getAllUsers(boolean state) {
         log.info("Attempting to get all users");
         int failureRate = new Random().nextInt(100);
 
-        if(!SERVICE_STATUS) {
+        if(state) {
             return userRepository.findAll();
         } else {
-            if (failureRate < 40) {
+            if (failureRate < 20) {
                 log.warn("Simulating a failure in getAllUsers");
                 throw new ResourceNotFoundException("Users not found");
-            } else if(failureRate > 39 && failureRate < 80) {
+            } else if(failureRate > 19 && failureRate < 50) {
                 throw new NoSuchElementException("Element does not exist.");
-            } else if(failureRate > 79 && failureRate < 90) {
+            } else if(failureRate > 49 && failureRate < 95) {
                 throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
                 return userRepository.findAll();
@@ -57,7 +59,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private List<User> fallbackRandomUsers(Throwable throwable) throws Throwable {
+    private List<User> getUsersFallbackMethod(Throwable throwable) throws Throwable {
         log.warn("Fallback method called due to: {}", throwable.getMessage());
 
         if (shouldIgnoreException(SERVICE_NAME, throwable)) {

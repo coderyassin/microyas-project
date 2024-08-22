@@ -1,5 +1,7 @@
 package org.yascode.microyas.user_service.exception;
 
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,12 +12,13 @@ import org.yascode.microyas.user_service.exception.response.ErrorMessage;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {ResourceNotFoundException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMessage handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-
+        log.info("ResourceNotFoundException exception message: {}", ex.getMessage());
         ErrorMessage errorMessage = ErrorMessage.builder()
                 .httpStatus(HttpStatus.NOT_FOUND)
                 .timestamp(LocalDateTime.now())
@@ -29,9 +32,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {NoSuchElementException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMessage handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
-
+        log.info("NoSuchElementException exception message: {}", ex.getMessage());
         ErrorMessage errorMessage = ErrorMessage.builder()
                 .httpStatus(HttpStatus.NOT_FOUND)
+                .timestamp(LocalDateTime.now())
+                .message(ex.getMessage())
+                .description(request.getDescription(false))
+                .build();
+
+        return errorMessage;
+    }
+
+    @ExceptionHandler(value = {RequestNotPermitted.class})
+    @ResponseStatus(value = HttpStatus.TOO_MANY_REQUESTS)
+    public ErrorMessage handleRequestNotPermitted(RequestNotPermitted ex, WebRequest request) {
+        log.info("RequestNotPermitted exception message: {}", ex.getMessage());
+        ErrorMessage errorMessage = ErrorMessage.builder()
+                .httpStatus(HttpStatus.TOO_MANY_REQUESTS)
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
                 .description(request.getDescription(false))

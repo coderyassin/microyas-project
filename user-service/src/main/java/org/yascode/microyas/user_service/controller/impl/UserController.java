@@ -22,9 +22,9 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<?> getAllUsers(boolean state) {
         log.info("Get all users");
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers(state));
     }
 
     @Override

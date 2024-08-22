@@ -18,3 +18,45 @@ spring:
   sql:
     init:
       mode: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: count_based
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+        record-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+        ignore-exceptions:
+      shared:
+        sliding-window-type: count_based
+        sliding-window-size: 100
+        permitted-number-of-calls-in-half-open-state: 30
+        wait-duration-in-open-state: 1s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+    instances:
+      user-service:
+        base-config: default
+        ignore-exceptions:
+          - org.yascode.microyas.user_service.exception.ResourceNotFoundException
+          - org.yascode.microyas.user_service.exception.NoSuchElementException

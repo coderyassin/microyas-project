@@ -12,31 +12,6 @@ spring:
             - Path=/users/**
           filters:
             - name: Logging
-            - name: CircuitBreaker
-              args:
-                name: user-serviceCB
-                fallbackUri: forward:/fallback/user-service
-                resilience4j:
-                  circuitBreaker:
-                    slidingWindowSize: 10
-                    failureRateThreshold: 50
-                    waitDurationInOpenState: 10000
-                    permittedNumberOfCallsInHalfOpenState: 3
-                    recordExceptions:
-                      - org.springframework.web.client.HttpServerErrorException
-                      - java.net.SocketTimeoutException
-                    ignoreExceptions:
-                      - org.springframework.web.client.HttpClientErrorException
-                    timeLimiter:
-                      timeoutDuration: 10s
-#            - name: Retry
-#              args:
-#                retries: 5
-#                backoff:
-#                  firstBackoff: 500ms
-#                  maxBackoff: 50000ms
-#                  factor: 2
-#                  basedOn: SERVER_ERROR
         - id: order-service-route
           uri: http://localhost:9096/
           predicates:
@@ -49,5 +24,4 @@ logging:
     includeBody: true
     logLevel: INFO
   level:
-    #org.springframework.cloud.gateway.filter.factory.RetryGatewayFilterFactory: DEBUG
     root: info

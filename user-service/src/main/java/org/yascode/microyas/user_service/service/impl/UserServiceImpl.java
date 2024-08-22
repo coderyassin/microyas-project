@@ -4,6 +4,9 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,10 +18,11 @@ import org.yascode.microyas.user_service.repository.UserRepository;
 import org.yascode.microyas.user_service.service.UserService;
 import org.yascode.microyas.user_service.util.CircuitBreakerUtils;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 @Service
@@ -37,40 +41,69 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CircuitBreaker(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
     @RateLimiter(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
-    public List<User> getAllUsers(boolean state) {
-        log.info("Attempting to get all users");
-        int failureRate = new Random().nextInt(100);
+    @TimeLimiter(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
+    @Retry(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
+    @CircuitBreaker(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
+    public CompletableFuture<List<User>> getAllUsers(boolean state,
+                                                   boolean retry,
+                                                   boolean timelimiter,
+                                                   int sleep) {
+        return CompletableFuture.supplyAsync(() -> {
+            log.info("Attempting to get all users");
+            int failureRate = new Random().nextInt(100);
 
-        if(state) {
-            return userRepository.findAll();
-        } else {
-            if (failureRate < 20) {
-                log.warn("Simulating a failure in getAllUsers");
-                throw new ResourceNotFoundException("Users not found");
-            } else if(failureRate > 19 && failureRate < 50) {
-                throw new NoSuchElementException("Element does not exist.");
-            } else if(failureRate > 49 && failureRate < 95) {
-                throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-            } else {
+            if(state) {
                 return userRepository.findAll();
+            } else if (retry) {
+                if (retry && failureRate > 80) {
+                    throw new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
+                } else {
+                    return userRepository.findAll();
+                }
+            } else if (timelimiter){
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return userRepository.findAll();
+            } else {
+                if (failureRate < 20) {
+                    log.warn("Simulating a failure in getAllUsers");
+                    throw new ResourceNotFoundException("Users not found");
+                } else if(failureRate > 19 && failureRate < 50) {
+                    throw new NoSuchElementException("Element does not exist.");
+                } else if(failureRate > 49 && failureRate < 95) {
+                    throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+                } else {
+                    return userRepository.findAll();
+                }
             }
-        }
+        }).exceptionally(throwable -> {
+            log.error("Error occurred while getting all users", throwable);
+            throw new CompletionException(throwable);
+        });
     }
 
-    private List<User> getUsersFallbackMethod(Throwable throwable) throws Throwable {
+    private CompletableFuture<List<User>> getUsersFallbackMethod(boolean state,
+                                                               boolean retry,
+                                                               boolean timelimiter,
+                                                               int sleep,
+                                                               Throwable throwable) throws Throwable {
         log.warn("Fallback method called due to: {}", throwable.getMessage());
 
         if (shouldIgnoreException(SERVICE_NAME, throwable)) {
             log.info("Exception {} is ignored by Circuit Breaker. Re-throwing.", throwable.getClass().getSimpleName());
             throw throwable;
+        } else if (isTimeoutException(throwable)) {
+            log.warn("TimeoutException occurred: {}", throwable.getMessage());
+            throw throwable;
         }
 
         log.info("Returning fallback user");
-        return generatesDefaultUsers(DEFAULT_SIZE);
+        return CompletableFuture.supplyAsync(() -> generatesDefaultUsers(DEFAULT_SIZE));
     }
-
 
 
     @Override
@@ -107,6 +140,10 @@ public class UserServiceImpl implements UserService {
                     return !isRecordException;
                 })
                 .orElse(false);
+    }
+
+    private boolean isTimeoutException(Throwable throwable) {
+        return throwable instanceof TimeoutException;
     }
 
     private List<User> generatesDefaultUsers(int size) {

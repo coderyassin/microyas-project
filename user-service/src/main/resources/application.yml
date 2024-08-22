@@ -76,3 +76,25 @@ resilience4j:
     instances:
       user-service:
         base-config: default
+  retry:
+    configs:
+      default:
+        enable-exponential-backoff: true
+        max-attempts: 1
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+        wait-duration: 1s
+    instances:
+      user-service:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        cancel-running-future: true
+        timeout-duration: 10s
+    instances:
+      user-service:
+        base-config: default

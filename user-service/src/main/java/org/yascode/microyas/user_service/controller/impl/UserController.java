@@ -11,6 +11,9 @@ import org.yascode.microyas.user_service.controller.api.UserApi;
 import org.yascode.microyas.user_service.entity.User;
 import org.yascode.microyas.user_service.service.UserService;
 
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+
 @RestController
 @RequestMapping("/users")
 @Slf4j
@@ -22,9 +25,13 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<?> getAllUsers(boolean state) {
+    public CompletionStage<List<User>> getAllUsers(boolean state, boolean retry, boolean timelimiter, int sleep) {
         log.info("Get all users");
-        return ResponseEntity.ok(userService.getAllUsers(state));
+        return userService.getAllUsers(state, retry, timelimiter, sleep)
+                .thenApply(users -> {
+                    log.info("Received users: [{}]", users.size());
+                    return users;
+                });
     }
 
     @Override

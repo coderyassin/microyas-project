@@ -18,5 +18,4 @@ public class LoggingFilter implements WebFilter {
                 .doOnSuccess(aVoid -> log.info("Success"));
     }
 
-
 }

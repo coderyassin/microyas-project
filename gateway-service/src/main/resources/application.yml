@@ -3,21 +3,30 @@ server:
 spring:
   application:
     name: gateway-service
-  cloud:
-    gateway:
-      routes:
-        - id: user-service-route
-          uri: http://localhost:9095/
-          predicates:
-            - Path=/users/**
-          filters:
-            - name: Logging
-        - id: order-service-route
-          uri: http://localhost:9096/
-          predicates:
-            - Path=/orders/**
-          filters:
-            - name: Logging
+#  cloud:
+#    gateway:
+#      routes:
+#        - id: user-service-route
+#          uri: http://localhost:9095/
+#          predicates:
+#            - Path=/users/**
+#          filters:
+#            - name: Logging
+#        - id: order-service-route
+#          uri: http://localhost:9096/
+#          predicates:
+#            - Path=/orders/**
+#          filters:
+#            - name: Logging
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
 logging:
   filter:
     includeHeaders: true

@@ -7,9 +7,8 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+  server:
+    enable-self-preservation: false
   dashboard:
     path: /dashboard
   environment: dev
-  instance:
-    lease-renewal-interval-in-seconds: 10
-

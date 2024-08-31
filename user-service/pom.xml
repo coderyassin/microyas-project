@@ -33,6 +33,7 @@
 		<java.version>22</java.version>
 		<spring-cloud.version>2023.0.3</spring-cloud.version>
 		<resilience4j.version>2.2.0</resilience4j.version>
+		<maven-model.version>3.9.9</maven-model.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -71,6 +72,11 @@
 			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-model</artifactId>
+			<version>${maven-model.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
@@ -94,13 +100,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>build-info</goal>
-						</goals>
-					</execution>
-				</executions>
 				<configuration>
 					<excludes>
 						<exclude>
@@ -109,7 +108,6 @@
 						</exclude>
 					</excludes>
 				</configuration>
-
 			</plugin>
 		</plugins>
 	</build>

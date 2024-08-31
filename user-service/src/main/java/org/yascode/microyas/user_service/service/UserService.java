@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 public interface UserService {
+    List<User> getAllUsers();
     CompletionStage<List<User>> getAllUsers(boolean state, boolean retry, boolean timelimiter, int sleep);
     User getUserById(Long id);
     User createUser(User user);

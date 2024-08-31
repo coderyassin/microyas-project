@@ -36,12 +36,13 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<?> getUsers() {
-        RestTemplate restTemplate = new RestTemplate();
+        /*RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Object> responseEntity = restTemplate.exchange("http://localhost:9095/users",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                Object.class);
-        return responseEntity;
+                Object.class);*/
+        log.info("Get users");
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.yascode.microyas.user_service.info;
+package org.yascode.microyas.project_service.info;
 
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.context.annotation.Bean;

@@ -41,6 +41,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
     @RateLimiter(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
     @TimeLimiter(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")
     @Retry(name = SERVICE_NAME, fallbackMethod = "getUsersFallbackMethod")

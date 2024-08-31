@@ -1,4 +1,4 @@
-package org.yascode.microyas.user_service.info;
+package org.yascode.microyas.project_service.info;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.model.Model;

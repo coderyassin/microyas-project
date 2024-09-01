@@ -32,6 +32,7 @@
 	<properties>
 		<java.version>22</java.version>
 		<spring-cloud.version>2023.0.3</spring-cloud.version>
+		<!--<spring-boot-admin.version>3.3.3</spring-boot-admin.version>-->
 		<resilience4j.version>2.2.0</resilience4j.version>
 		<maven-model.version>3.9.9</maven-model.version>
 	</properties>
@@ -40,6 +41,10 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
+		<!--<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -92,6 +97,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!--<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-dependencies</artifactId>
+				<version>${spring-boot-admin.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>-->
 		</dependencies>
 	</dependencyManagement>
 

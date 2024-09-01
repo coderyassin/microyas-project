@@ -3,6 +3,12 @@ server:
 spring:
   application:
     name: service-registry
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:7777
+#        instance:
+#          name: ${spring.application.name}
 management:
   endpoints:
     web:

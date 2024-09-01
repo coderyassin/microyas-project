@@ -3,6 +3,12 @@ server:
 spring:
   application:
     name: user-service
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:7777
+#        instance:
+#          name: ${spring.application.name}
   datasource:
     url: jdbc:h2:mem:testdb
     username: sa
@@ -104,11 +110,14 @@ eureka:
     lease-expiration-duration-in-seconds: 90
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
-    health-check-url: ${management.context-path}/health
+    health-check-url-path: /actuator/health
+    metadata-map:
+      startup: ${random.int}
+      management.context-path: /actuator
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761}/eureka/
     healthcheck:
       enabled: true

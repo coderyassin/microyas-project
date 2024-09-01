@@ -36,6 +36,8 @@ management:
       exposure:
         include: "*"
   endpoint:
+    env:
+      show-values: always
     health:
       show-details: always
 eureka:

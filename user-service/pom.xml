@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.yascode.microyas</groupId>
-	<artifactId>project-service</artifactId>
+	<artifactId>user-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>user-service</name>
-	<description>The service for managing projects</description>
+	<description>The service for managing users</description>
 	<url/>
 	<licenses>
 		<license/>

@@ -4,7 +4,13 @@ spring:
   application:
     name: gateway-service
 #  cloud:
+#    loadbalancer:
+#      configurations: health-check
 #    gateway:
+#      discovery:
+#        locator:
+#          enabled: true
+#          lower-case-service-id: true
 #      routes:
 #        - id: user-service-route
 #          uri: http://localhost:9095/
@@ -18,15 +24,28 @@ spring:
 #            - Path=/orders/**
 #          filters:
 #            - name: Logging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 eureka:
   instance:
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    health-check-url: ${management.context-path}/health
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    healthcheck:
+      enabled: true
 logging:
   filter:
     includeHeaders: true
